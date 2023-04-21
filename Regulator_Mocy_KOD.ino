@@ -1,6 +1,6 @@
-#include  <TimerOne.h>                    //biblioteka do obslugi regulacji fazowej
-  
-#include <Wire.h>                         //inicjalizacja wyświetlacza
+#include <TimerOne.h>                    // library for phase control
+
+#include <Wire.h>                         // display initialization
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 #define OLED_RESET 4
@@ -9,135 +9,134 @@ Adafruit_SSD1306 display(OLED_RESET);
 //#error("Height incorrect, please fix Adafruit_SSD1306.h!");
 #endif/
 
-int LED =12;
+int LED = 12;
+
+int button_add = 9;                   // button to increase power
+
+int button_subtract = 7;                 // button to decrease power
+
+int button_save = 8;                   // save button
+int button_save_state = HIGH;
+int last_button_save_state = HIGH;
+int save = 0;
+
+int Triac = 10;                          // pin to control the triac
+
+int inc = 1;                                // test variable
+
+volatile int i = 0;                         // counts time since zero crossing CHYBA?!?
+volatile boolean zero_crossing = 0;            // variable for zero crossing detection
+int value = 128;                            // variable for changing power value 128 - Off (0%), 0 - On (100%)
+int frequency_step = 75;                        // For 60 Hz should be changed to 65, determines time before activation
+
+/* It is calculated based on the frequency of the supply voltage and the brightness level needed
+ *
+ * The program is based on two zero crossings during one cycle, which means for 120Hz and 60Hz or for 100Hz and 50Hz
+ *
+ * To determine the frequency step, divide the length of a full half-cycle of the signal in microseconds by the number of brightness levels per step
+ *
+ * (120Hz =  8,333uS) -> 128 steps gives 65uS
+ * (100Hz = 10,000uS) -> 128 steps gives 75uS
+ */
+
+void setup() {
+
+  pinMode(Triac, OUTPUT);                // set triac as output
+
+  pinMode(button_add, INPUT_PULLUP);  // connect buttons with pull-up resistors
+  pinMode(button_subtract, INPUT_PULLUP);
+  pinMode(button_save, INPUT_PULLUP);
 
 
-int przycisk_dodaj = 9;                   //przycisk zwiekszajacy moc
+  attachInterrupt(0, detect_zero_crossing, RISING);  // function responsible for detecting zero crossing connected to pin D2 -> (0)
+  Timer1.initialize(frequency_step);                    // initialize timer for the required frequency
+  Timer1.attachInterrupt(check_value, frequency_step);    // function checks if the triac should be turned on at the right moment and works in milliseconds
 
-int przycisk_odejmij = 7;                 //przycisk zmniejszajacy moc
+  display.begin(SSD1306_SWITCHCAPVCC, 0x3C);  // initialize display via I2C with address 0x3D and resolution of 128x64
+  display.display();
+  display.clearDisplay();
 
-int przycisk_zapisz =8;                   //przycisk zapisu
-int stan_przycisku_zapisz=HIGH;
-int ostatni_stan_przycisku_zapisz=HIGH;
-int zapis=0;
-
-int Triak = 10;                          //pin do sterowania triakiem
-
-int inc=1;                                // dotyczy zmiennej testowej
-
-volatile int i=0;                         //odlicza czas od przejscia przez zero CHYBA?!?
-volatile boolean przejscie_przez_zero=0;            //zmienna dotyczaca przejscia przez zero                
-int value = 128;                            //zmienna sluzaca do zmiany wartosci mocy 128- Wylaczone (0%) 0-Wlaczone (100%)                             
-int krok_czestotliw = 75;                        //Dla 60 Hz powinno byc zmienione na 65 określa czas czas przed załączniem
- 
-/* Jest obliczany bazujac na częstotliwości napiecia zasilania i ilosci jasnosci jakie potrzeba
- *  
- *  Program bazuje na dwoch przejsciach przez zero podczas jednego cyklu to znaczy dla 120Hz i 60 hz lub dla 100Hz i 50Hz
- *  
- *  Zeby okreslic krok czestotliwoci nalezy podzielic dlugosc pelnej polowki sygnalu w mikrosekundach przez ilosc jasnosci na krok
- *  
- * (120Hz =  8 333uS)-> 128 kroków daje 65uS
- * (100Hz = 10 000uS)-> 128 kroków daje 75uS
-*/
-
-void setup() { 
-    
-  pinMode(Triak, OUTPUT);                //wybieramay triaka jako wyjscie 
-
-  pinMode(przycisk_dodaj, INPUT_PULLUP);  //podlaczenie przyciskow przez rezystory podciagajace 
-  pinMode(przycisk_odejmij, INPUT_PULLUP); 
-  pinMode(przycisk_zapisz,INPUT_PULLUP);   
-
-
-                       
-  attachInterrupt(0, wykrycie_przejscia_przez_zero, RISING);  //funkcja odpowiada za detekcje przejscia przez zero podlaczonego do pinu D2->(0)   
-  Timer1.initialize(krok_czestotliw);                    //inicjalizacja timera dla czestotliwosci ktorej potrzebujemy 
-  Timer1.attachInterrupt(sprawdzenie_value, krok_czestotliw);    //funkcja sprawdza czy triak zostanie zalaczony w odpowiedniej chwili i dziala w milisekundach  
-   
-  display.begin(SSD1306_SWITCHCAPVCC, 0x3C);  //inicjalizacja wyswietlacza przez I2C i podaniu jej adresu 0x3D o rozdzielczosci 128x64 
-  display.display(); 
-  display.clearDisplay();     
-                                  
 }
 
-void wykrycie_przejscia_przez_zero() {   //funkcja sterujaca triakiem gdy zestonie wykryte przejscie przez 0  
-  przejscie_przez_zero = true;               
-  i=0;
-  digitalWrite(Triak, LOW);      
-}                                 
+void detect_zero_crossing() {   // function for controlling the triac when a zero crossing is detected
+  zero_crossing = true;
+  i = 0;
+  digitalWrite(Triac, LOW);
+}
 
-
-void sprawdzenie_value() {            //funkcja odpowiadajaca za sprawdzenie przejscia przez zero         
-  if(przejscie_przez_zero == true) {              
-    if(i>=value) {                     
-      digitalWrite(Triak, HIGH);       
-      i=0;                         
-      przejscie_przez_zero = false; 
-    } 
+void check_value() {            // function responsible for checking zero crossing
+  if (zero_crossing == true) {
+    if (i >= value) {
+      digitalWrite(Triac, HIGH);
+      i = 0;
+      zero_crossing = false;
+    }
     else {
-      i++;                    
-    }                                
-  }                                  
-}                                   
+      i++;
+    }
+  }
+}
 
-int Przycisk_Dodaj (int przycisk_dodaj, int przycisk_zapisz){ //przycisk zwiekszający zmienna value odpowiadajaca za  moc
-  if(zapis==1){
-  if (digitalRead(przycisk_dodaj) == LOW) { 
-    if (value < 128) { 
-      value = value + 1;
-      delay(10);
-        }
+int Button_Add(int button_add, int button_save){ // Button to increase the value of the variable "value" representing power
+  if(save==1){
+    if (digitalRead(button_add) == LOW) { 
+      if (value < 128) { 
+        value = value + 1;
+        delay(10);
       }
-  return(value);
-   }
- }
+    }
+    return(value);
+  }
+}
 
-int Przycisk_Odejmij(int przycisk_odejmij,int przycisk_zapisz){ //przycisk zmniejszajacy zmienna value odpowiadajaca za  moc
- if(zapis==1){
-  if (digitalRead(przycisk_odejmij) == LOW) { 
-    if (value > 0) { 
-      value=value - 1; 
-      delay(10);
-        }
+int Button_Subtract(int button_subtract, int button_save){ // Button to decrease the value of the variable "value" representing power
+  if(save==1){
+    if (digitalRead(button_subtract) == LOW) { 
+      if (value > 0) { 
+        value=value - 1; 
+        delay(10);
       }
-  return(value);
-   }
- }
- 
-int Przycisk_zapisz(int przycisk_zapisz){               //przycisk po ktorego wcisnieciu jest mozliwa dopiero zmiana mocy
-  stan_przycisku_zapisz=digitalRead(przycisk_zapisz);
-  if(stan_przycisku_zapisz==LOW && ostatni_stan_przycisku_zapisz==HIGH){
-  zapis = 1 -zapis;
-     }
-  ostatni_stan_przycisku_zapisz = stan_przycisku_zapisz;
-   delay(10);
-  return (zapis);
- } 
+    }
+    return(value);
+  }
+}
 
-void test(){                                                   //sekwencyjne zapalanie i gaszenie obciązenia
- value+=inc;
-  if((value>=128) || (value<=0))
-    inc*=-1;
+int Button_Save(int button_save){ // Button that enables changing the power only after pressing it
+  button_save_state = digitalRead(button_save);
+  if(button_save_state == LOW && last_button_save_state == HIGH){
+    save = 1 - save;
+  }
+  last_button_save_state = button_save_state;
+  delay(10);
+  return (save);
+} 
+
+void test(){ // Sequentially turns on and off a load
+  value += increment;
+  if((value >= 128) || (value <= 0))
+    increment *= -1;
   delay(20);
 }
 
 void loop() { 
   
- Przycisk_zapisz(przycisk_zapisz);                            //inicjalizacja funkcji odpowiadajacych za sterowanie przyciskami
- Przycisk_Dodaj ( przycisk_dodaj,przycisk_zapisz);
- Przycisk_Odejmij( przycisk_odejmij,przycisk_zapisz);
+  Button_Save(button_save); // Initialize functions to control buttons
+  Button_Add(button_add, button_save);
+  Button_Subtract(button_subtract, button_save);
  
-  display.clearDisplay();                                     //inicjalizacja wyswietlacza
+  display.clearDisplay(); // Initialize the display
   display.setTextSize(4);
   display.setTextColor(WHITE);
   display.setCursor(24,0);
   display.print(map(value, 128, 0, 0, 100)); 
   display.print("%");
   display.display();
-  if (zapis==1){
+  
+  if (save == 1){
     digitalWrite(LED, HIGH);
   }
   else
-  digitalWrite(LED, LOW);
-     
+    digitalWrite(LED, LOW);
 }
+
+
