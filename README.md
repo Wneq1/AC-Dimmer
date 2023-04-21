@@ -8,7 +8,6 @@ WARNING: THIS PROJECT INVOLVES HIGH VOLTAGES THAT CAN BE DANGEROUS TO LIFE AND H
 YOU PERFORM THIS PROJECT AT YOUR OWN RISK AND RESPONSIBILITY.
 
 To complete this project you will need:
-
 Arduino or other microcontroller
 * Fuse
 * Resistors
