@@ -36,7 +36,8 @@ Our system consists of several modules:
 * actuator module
 * measurement module
 * logic module
-![obraz_2023-04-21_211934737_preview_rev_1](https://user-images.githubusercontent.com/127328405/233717648-f9f3e758-c019-4a59-9c7b-8fc98fb0e4d0.png)
+![image](https://user-images.githubusercontent.com/127328405/233717977-a205c8f1-172e-4290-bee5-1d3509b0191a.png)
+
 
 
 
