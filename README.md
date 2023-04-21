@@ -31,14 +31,19 @@ Arduino or other microcontroller
 * OLED Display
 * Thyristor BT138
 
+Our system consists of several modules: 
+* power module
+* actuator module
+* measurement module
+* logic module
+![obraz_2023-04-21_211934737_preview_rev_1](https://user-images.githubusercontent.com/127328405/233717648-f9f3e758-c019-4a59-9c7b-8fc98fb0e4d0.png)
 
 
 
 
-Have u ever... 
 
 
 
-bla bla bla 
+Below are some illustrative photos:
 ![IMG_0333](https://user-images.githubusercontent.com/127328405/233417970-14f5ca37-7357-4c78-9306-d3bf5964af4e.JPG)
 ![IMG_0334](https://user-images.githubusercontent.com/127328405/233417983-43a7cb51-7ace-44d9-91cd-f096ca21e5a4.JPG)
