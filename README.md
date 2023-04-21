@@ -2,7 +2,7 @@
 
 Power regulator for arduino 
 ![IMG_0336](https://user-images.githubusercontent.com/127328405/233417921-0a248f8b-8eb7-490d-a4a8-28f2506e8195.JPG)
-In today's project, we will focus on building a power regulator using an Arduino microcontroller and a thyristor. Power regulators are commonly used to control the amount of electrical energy supplied to loads such as lamps, heaters, or motors, in order to adjust their brightness, temperature, or speed. By building your own power regulator using Arduino and a thyristor, you can create a cost-effective and customized solution for controlling AC loads in DIY projects or home automation systems. In the file, you can find a finished project in KiCad.
+In today's project, we will focus on building a power regulator using an Arduino microcontroller and a thyristor. Power regulators are commonly used to control the amount of electrical energy supplied to loads such as lamps, heaters, or motors, in order to adjust their brightness, temperature, or speed. By building your own power regulator using Arduino and a thyristor, you can create a cost-effective and customized solution for controlling AC loads in DIY projects or home automation systems. IF you wish to built one by yourselfe in this file, you can find a finished project in KiCad and short code in Arduino.
 
 WARNING: THIS PROJECT INVOLVES HIGH VOLTAGES THAT CAN BE DANGEROUS TO LIFE AND HEALTH. 
 YOU PERFORM THIS PROJECT AT YOUR OWN RISK AND RESPONSIBILITY.
