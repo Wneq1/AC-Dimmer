@@ -46,9 +46,13 @@ Now, let's do some math. Let's say the frequency of the power grid is 50 Hz, whi
 
 Short description:
 The waveform appearance for 100% power:
+
 ![image](https://user-images.githubusercontent.com/127328405/233792444-77caff8e-5803-43e4-a006-3274114af943.png)
+
 The waveform appearance for 50% power:
+
 ![image](https://user-images.githubusercontent.com/127328405/233792453-679abb82-182c-4c3c-9561-93fae93011a5.png)
+
 
 
 
