@@ -1,4 +1,4 @@
-# Power-Regulator
+# AC-Dimmer
 
 Power regulator for arduino 
 ![IMG_0336](https://user-images.githubusercontent.com/127328405/233417921-0a248f8b-8eb7-490d-a4a8-28f2506e8195.JPG)
@@ -40,7 +40,7 @@ Our system consists of several modules:
 
 Short description of this project:
 
-The power module is designed to deliver a stable 5V due to the current drawn by the circuit. I decided to use a pre-made Hi-Link power module, but if there is no need to support the interface (display buttons), a transformerless power supply can be used.
+The power module is designed to deliver a stable 5V due to the current drawn by the circuit. I decided to use a pre-made Hi-Link power module, but if there is no need to support the interface (display buttons), a transformerless power supply can be used. The type of regulation used in the project is phase regulation.
 
 The measurement module consists of an optoelectronic component that is designed to detect the zero crossing of the input signal and then send information to the control module.
 
