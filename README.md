@@ -77,3 +77,8 @@ Below are some illustrative photos and link to video prezentation:
 
 Short presentation on YouTube:
 https://www.youtube.com/watch?v=zxgGnlvmVzU
+
+In the files, you can also find another version of the Arduino code called 'Final Version,' where the only change is the selection mode of the controller values. However, the operating principle remains the same as in the previous version. You can find the link below.
+Short presentation of Finall Version on YouTube:
+https://www.youtube.com/watch?v=YGqYrHkOaR0
+
