@@ -1,0 +1,156 @@
+#include <TimerOne.h>
+#include <Wire.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
+#include <EEPROM.h>
+
+#define EEPROM_ADDRESS 1
+#define OLED_RESET 4
+Adafruit_SSD1306 display(OLED_RESET);
+
+const int TriacPin = 10;
+volatile int zeroCrossCount = 0;
+volatile int value = 0;
+int LED = 12;           
+int previous_save_value = 0;
+int set_value = 0;
+int add_button = 9;
+int subtract_button = 7;
+int save_button = 8;
+int save_button_state = HIGH;
+int last_save_button_state = HIGH;
+bool save = false;
+volatile int savedValue;
+volatile int x;
+
+
+void setup() {
+  Serial.begin(9600);
+  pinMode(TriacPin, OUTPUT);
+  pinMode(LED, OUTPUT);
+  pinMode(add_button, INPUT_PULLUP);
+  pinMode(subtract_button, INPUT_PULLUP);
+  pinMode(save_button, INPUT_PULLUP);
+
+  attachInterrupt(0, zeroCross, FALLING);
+  Timer1.initialize(10000); // Czas trwania jednego okresu (20 ms) dla 50 Hz
+  Timer1.attachInterrupt(outputControl);
+
+  display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
+  display.display();
+  display.clearDisplay();
+
+  savedValue = EEPROM.read(EEPROM_ADDRESS);
+  if (savedValue >= 0 && savedValue <= 128) {
+    value = savedValue;
+    x = savedValue;  // Optionally, you can also set x to the saved value
+  }
+
+}
+
+void loop() {
+  int save_button_state = digitalRead(save_button);
+
+  if (save_button_state == LOW && last_save_button_state == HIGH) {
+    save = !save;
+    if (save == 0) {
+      value = x;
+    savedValue = EEPROM.read(EEPROM_ADDRESS);
+
+      // Check if the saved value is different from the current value
+      if (savedValue != value) {
+        EEPROM.write(EEPROM_ADDRESS, value);
+        // No need for EEPROM.commit on standard Arduino boards
+      }
+    }
+  }
+
+  last_save_button_state = save_button_state;
+
+  if (save == 1) {
+    digitalWrite(LED, HIGH);
+    
+    x = AddButton(add_button);
+    x = SubtractButton(subtract_button);
+
+    display.clearDisplay();
+    display.setTextSize(3);
+    display.setTextColor(WHITE);
+    display.setCursor(40, 0);
+    display.print(map(x, 128, 0, 100, 0));
+    display.print("%");
+
+    display.setTextSize(1);
+    display.setTextColor(WHITE);
+    display.setCursor(20, 25);
+    display.print("Group regulation");
+    display.display();
+  } else if (save == 0 && set_value == 0) {
+    for (int i = 0; i < x; i++) {
+      value++;
+    }
+    set_value = 1;
+
+    display.clearDisplay();
+    display.setTextSize(3);
+    display.setTextColor(WHITE);
+    display.setCursor(40, 0);
+    display.print(map(x, 128, 0, 100, 0));
+    display.print("%");
+
+    display.setTextSize(1);
+    display.setTextColor(WHITE);
+    display.setCursor(20, 25);
+    display.print("Group regulation");
+    display.display();
+  }
+
+  if (save == 0) {
+    digitalWrite(LED, HIGH);
+    delay(500);
+    digitalWrite(LED, LOW);
+    delay(500);
+  }
+
+  Serial.println("X " + String(x) + " Value " + value);
+}
+
+
+
+int AddButton(int add_button) {
+  if (digitalRead(add_button) == LOW) {
+    if (x < 128) {
+      x = x + 1;
+      delay(10);
+    }
+  }
+  return x;
+}
+int SubtractButton(int subtract_button) {
+  if (digitalRead(subtract_button) == LOW) {
+    if (value > 0) {
+      x = x - 1;
+      delay(10);
+    }
+  }
+  return x;
+}
+bool SaveButton(int save_button) {
+  save_button_state = digitalRead(save_button);
+  if (save_button_state == LOW && last_save_button_state == HIGH) {
+    save = !save;
+  }
+  last_save_button_state = save_button_state;
+  delay(10);
+  return save;
+}
+void zeroCross() {
+  zeroCrossCount=(zeroCrossCount+1)%100;
+}
+void outputControl() {
+  if (zeroCrossCount < value || value == 100) {
+    digitalWrite(TriacPin, HIGH);
+  } else {
+    digitalWrite(TriacPin, LOW); 
+  }
+}
